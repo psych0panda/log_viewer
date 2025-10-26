@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-cloud-compute
+google-cloud-logging
+aiofiles
+protobuf

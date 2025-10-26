@@ -1,0 +1,66 @@
+- name: Deploy Log Viewer to a single node
+  hosts: neuroboss-service-prod
+  become: yes
+  vars:
+    app_dir: /opt/log_viewer
+    service_name: log_viewer
+    port: 27015
+    repo_url: https://local-domain.com/arcbridge.git  # Замените на ваш локальный домен
+  tasks:
+    - name: Install Python3 and pip
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install git
+      apt:
+        name: git
+        state: present
+
+    - name: Clone the repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main  # Укажите нужную ветку, если необходимо
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/log_viewer/backend/requirements.txt"
+        executable: pip3
+
+    - name: Create systemd service file
+      copy:
+        dest: /etc/systemd/system/{{ service_name }}.service
+        content: |
+          [Unit]
+          Description=Log Viewer Service
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=root
+          WorkingDirectory={{ app_dir }}/log_viewer/backend
+          ExecStart=/usr/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port {{ port }}
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart log_viewer service
+
+    - name: Enable and start the service
+      systemd:
+        name: "{{ service_name }}"
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Restart log_viewer service
+      systemd:
+        name: "{{ service_name }}"
+        state: restarted
