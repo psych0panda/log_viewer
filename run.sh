@@ -1,0 +1,1 @@
+ansible-playbook ansible/configure_docker_logging.yml -i ansible/hosts

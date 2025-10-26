@@ -54,7 +54,7 @@ Ansible playbook `ansible/configure_docker_logging.yml` позволяет ра�
 
 2. Запустите playbook:
    ```
-   ansible-playbook ansible/configure_docker_logging.yml -i <inventory-file>
+   ansible-playbook ansible/configure_docker_logging.yml -i ansible/hosts
    ```
 
 Playbook установит зависимости, клонирует репозиторий, создаст systemd сервис и запустит приложение.
