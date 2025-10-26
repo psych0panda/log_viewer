@@ -12,6 +12,7 @@
         name:
           - python3
           - python3-pip
+          - python3-venv
         state: present
         update_cache: yes
 
@@ -61,6 +62,10 @@
         name: "{{ service_name }}"
         enabled: yes
         state: started
+
+    - name: Print application URL
+      debug:
+        msg: "Application is deployed and running at http://{{ inventory_hostname }}:{{ port }}"
 
   handlers:
     - name: Restart log_viewer service
