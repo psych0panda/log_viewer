@@ -5,7 +5,7 @@
     app_dir: /opt/log_viewer
     service_name: log_viewer
     port: 27015
-    repo_url: https://local-domain.com/arcbridge.git  # Замените на ваш локальный домен
+    repo_url: https://github.com/psych0panda/log_viewer.git  # Замените на ваш локальный домен
   tasks:
     - name: Install Python3 and pip
       apt:

@@ -28,7 +28,7 @@
 
 1. Клонируйте репозиторий:
    ```
-   git clone <repository-url>
+   git clone https://github.com/psych0panda/log_viewer.git
    cd log_viewer
    ```
 
