@@ -57,4 +57,4 @@
     - name: Restart log_viewer container
       community.docker.docker_container:
         name: "{{ container_name }}"
-        state: restarted
+        restart: yes
