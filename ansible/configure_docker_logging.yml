@@ -1,74 +1,65 @@
-- name: Deploy Log Viewer to a single node
+- name: Deploy Log Viewer to a single node using Docker
   hosts: node1
   become: yes
   vars:
     app_dir: /opt/log_viewer
-    service_name: log_viewer
+    image_name: log_viewer
+    container_name: log_viewer
     port: 27015
-    repo_url: https://github.com/psych0panda/log_viewer.git  # Замените на ваш локальный домен
+    repo_url: https://github.com/psych0panda/log_viewer.git
+
   tasks:
-    - name: Install Python3 and pip
+    - name: Install prerequisites
       apt:
         name:
-          - python3
+          - docker.io
           - python3-pip
-          - python3-venv
+          - git
         state: present
         update_cache: yes
 
-    - name: Install git
-      apt:
-        name: git
-        state: present
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        executable: pip3
 
-    - name: Clone the repository
+    - name: Ensure Docker service is running and enabled
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Clone or update the repository
       git:
         repo: "{{ repo_url }}"
         dest: "{{ app_dir }}"
-        version: master  # Укажите нужную ветку, если необходимо
+        version: master
+        force: yes
 
-    - name: Create virtualenv
-      command: python3 -m venv {{ app_dir }}/venv
+    - name: Build Docker image from Dockerfile
+      community.docker.docker_image:
+        name: "{{ image_name }}"
+        build:
+          path: "{{ app_dir }}"
+        source: build
+        state: present
+      notify: Restart log_viewer container
 
-    - name: Install Python dependencies
-      pip:
-        requirements: "{{ app_dir }}/log_viewer/backend/requirements.txt"
-        virtualenv: "{{ app_dir }}/venv"
-
-    - name: Create systemd service file
-      copy:
-        dest: /etc/systemd/system/{{ service_name }}.service
-        content: |
-          [Unit]
-          Description=Log Viewer Service
-          After=network.target
-
-          [Service]
-          Type=simple
-          User=root
-          WorkingDirectory={{ app_dir }}/log_viewer/backend
-          ExecStart={{ app_dir }}/venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port {{ port }}
-          Restart=always
-
-          [Install]
-          WantedBy=multi-user.target
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Restart log_viewer service
-
-    - name: Enable and start the service
-      systemd:
-        name: "{{ service_name }}"
-        enabled: yes
+    - name: Create and run Log Viewer container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
         state: started
+        restart_policy: always
+        ports:
+          - "{{ port }}:{{ port }}"
 
     - name: Print application URL
       debug:
         msg: "Application is deployed and running at http://{{ inventory_hostname }}:{{ port }}"
 
   handlers:
-    - name: Restart log_viewer service
-      systemd:
-        name: "{{ service_name }}"
+    - name: Restart log_viewer container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
         state: restarted
