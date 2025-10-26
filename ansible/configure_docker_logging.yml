@@ -24,7 +24,7 @@
       git:
         repo: "{{ repo_url }}"
         dest: "{{ app_dir }}"
-        version: main  # Укажите нужную ветку, если необходимо
+        version: master  # Укажите нужную ветку, если необходимо
 
     - name: Create virtualenv
       command: python3 -m venv {{ app_dir }}/venv
