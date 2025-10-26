@@ -1,5 +1,5 @@
 - name: Deploy Log Viewer to a single node using Docker
-  hosts: node1
+  hosts: node2
   become: yes
   vars:
     app_dir: /opt/log_viewer
