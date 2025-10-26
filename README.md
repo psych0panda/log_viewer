@@ -43,7 +43,7 @@ sudo apt update && sudo apt install -y python3-venv
 2) Установите зависимости:
 
 ```bash
-pip install -r backend/requirements.txt
+pip install -r backend/requirements-docker.txt
 ```
 
 3) Запустите сервер разработки:

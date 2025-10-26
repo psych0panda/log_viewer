@@ -34,35 +34,32 @@ def get_docker_containers_gcloud(instance_name, zone):
     try:
         # Выполняем команду на удаленной машине
         gcloud_command = [
-            'gcloud', 'compute', 'ssh', instance_name,
+            'gcloud', 'compute', 'ssh', f'psychopanda@{instance_name}',
             '--zone', zone,
             '--ssh-flag=-T',
-            '--command', command
+            '--command', command,
+            '--quiet'
         ]
-
-        # capture_output=True захватывает stdout и stderr
-        # text=True декодирует их в строки
         result = subprocess.run(
             gcloud_command,
             capture_output=True,
             text=True,
-            check=True  # Вызовет исключение, если команда завершится с ошибкой
+            check=True
         )
-
         # Каждая строка вывода - это отдельный JSON объект для контейнера
         containers = []
         for line in result.stdout.strip().split('\n'):
             if line:
                 containers.append(json.loads(line))
-
         return containers
-
     except FileNotFoundError:
-        print(f"Error: gcloud command not found for {instance_name}")
-        return None
+        error_msg = f"Error: gcloud command not found for {instance_name}"
+        print(error_msg)
+        return error_msg
     except subprocess.CalledProcessError as e:
-        print(f"Error running gcloud for {instance_name}: {e.stderr}")
-        return None
+        error_msg = f"Error running gcloud for {instance_name}: {e.stderr}"
+        print(error_msg)
+        return error_msg
 
 def get_container_logs_gcloud(instance_name, zone, container_id_or_name):
     """
@@ -80,10 +77,11 @@ def get_container_logs_gcloud(instance_name, zone, container_id_or_name):
 
     try:
         gcloud_command = [
-            'gcloud', 'compute', 'ssh', instance_name,
+            'gcloud', 'compute', 'ssh', f'psychopanda@{instance_name}',
             '--zone', zone,
             '--ssh-flag=-T',
-            '--command', command
+            '--command', command,
+            '--quiet'
         ]
         result = subprocess.run(
             gcloud_command,
@@ -95,11 +93,13 @@ def get_container_logs_gcloud(instance_name, zone, container_id_or_name):
         full_logs = result.stdout + result.stderr
         return full_logs
     except subprocess.CalledProcessError as e:
+        error_msg = f"Error running gcloud for {instance_name}: {e.stderr}"
+        print(error_msg)
         return None
 
 @app.get("/")
 def read_root():
-    return FileResponse("../frontend/index.html")
+    return FileResponse("frontend/index.html")
 
 @app.get("/api/nodes")
 def get_nodes():
@@ -109,8 +109,8 @@ def get_nodes():
 @app.get("/api/containers")
 def get_containers(node: str):
     containers = get_docker_containers_gcloud(node, GCE_ZONE)
-    if containers is None:
-        raise HTTPException(status_code=500, detail="Error fetching containers")
+    if isinstance(containers, str):
+        raise HTTPException(status_code=500, detail=containers)
     container_names = [c.get('Names', c.get('ID', '')) for c in containers]
     return {"containers": container_names}
 
