@@ -22,6 +22,8 @@ WORKDIR /app
 
 COPY --from=backend /app/backend .
 COPY --from=frontend /app/frontend/ ./frontend
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 27015
 
