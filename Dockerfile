@@ -20,9 +20,9 @@ FROM python:3.8-slim
 WORKDIR /app
 
 COPY --from=backend /app/backend .
-COPY --from=frontend /app/frontend/ ./frontend
-COPY backend/requirements-docker.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements-docker.txt
+COPY --from=frontend /app/frontend ./frontend
+COPY --from=backend /app/backend/requirements-docker.txt ./requirements-docker.txt
+RUN ls -la /app && ls -la /app/frontend && pip install --no-cache-dir -r requirements-docker.txt && pip freeze
 
 RUN apt-get update && apt-get install -y curl gnupg && \
     curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor > /usr/share/keyrings/cloud.google.gpg && \
@@ -40,4 +40,4 @@ RUN chmod 600 /root/.ssh/google_compute_engine && chmod 644 /root/.ssh/google_co
 
 EXPOSE 27015
 
-CMD ["python", "main.py"]
+CMD ["python3", "main.py"]

@@ -24,6 +24,12 @@
         state: started
         enabled: yes
 
+    - name: Allow port in UFW
+      ufw:
+        rule: allow
+        port: "{{ port }}"
+        proto: tcp
+
     - name: Clone or update the repository
       git:
         repo: "{{ repo_url }}"
@@ -31,11 +37,12 @@
         version: master
         force: yes
 
-    - name: Build Docker image from Dockerfile
+    - name: Build Docker image from Dockerfile (no cache)
       community.docker.docker_image:
         name: "{{ image_name }}"
         build:
           path: "{{ app_dir }}"
+          nocache: yes
         source: build
         state: present
       notify: Restart log_viewer container

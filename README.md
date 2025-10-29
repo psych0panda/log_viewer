@@ -61,6 +61,29 @@ uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 python -c "import fastapi; print('fastapi', fastapi.__version__)"
 ```
 
+Установить ansible
+------------------
+```
+sudo apt update
+sudo apt install -y ansible
+```
+
+Установить Google Cloud SDK (gcloud)
+------------------------------------
+```
+sudo apt install -y apt-transport-https ca-certificates gnupg
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | \
+  sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+  sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt update
+sudo apt install -y google-cloud-sdk
+
+```
+Проверьте, что ansible работает: ansible --version
+Проверьте, что gcloud работает: gcloud --version
+Настройте gcloud: gcloud init (авторизация и выбор проекта, если требуется)
+
 Ansible: типичные ошибки и их исправления
 ----------------------------------------
 Если при выполнении плейбука на удалённой ноде (например, node1) вы видите ошибки, обратите внимание на два распространённых момента:
